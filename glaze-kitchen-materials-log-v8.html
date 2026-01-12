@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Glaze Kitchen Materials Log</title>
+  <style>
+    :root {
+      --border:#111;
+      --shade:#f2f2f2;
+      --shade2:#fafafa;
+      --header:#e6e6e6;
+      --group:#f5f5f5;
+      --text:#000;
+      --muted:#444;
+      --radius:12px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color:var(--text);
+      background:#fff;
+    }
+    .page{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 12px 12px 20px;
+    }
+    header{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    h1{
+      font-size: 20px;
+      margin: 6px 0 0;
+      letter-spacing: .2px;
+    }
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 140px;
+      gap:10px;
+      align-items:end;
+    }
+    .meta2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      align-items:end;
+    }
+    .meta3{
+      display:flex;
+      justify-content:flex-end;
+      margin-top: 6px;
+    }
+    .totalbox{ width: 180px; }
+    label{
+      display:block;
+      font-size: 12px;
+      color:var(--muted);
+      margin-bottom: 4px;
+    }
+    input[type="text"], input[type="date"], input[type="search"], select{
+      width:100%;
+      padding:10px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      color:var(--text);
+      background:#fff;
+    }
+    /* Table */
+    .table-wrap{
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+    }
+    thead th{
+      background:var(--header);
+      border-bottom:2px solid var(--border);
+      font-size: 13px;
+      text-align:left;
+      padding: 10px 10px;
+    }
+    thead th:not(:last-child),
+    tbody td:not(:last-child){
+      border-right:2px solid var(--border);
+    }
+    tbody td{
+      border-bottom:2px solid var(--border);
+      padding: 8px 10px;
+      vertical-align:middle;
+      font-size: 13px;
+    }
+    tbody tr:nth-child(even) td{ background: var(--shade2); }
+    tbody tr:nth-child(odd) td{ background: #fff; }
+    .mat{ width: 52%; }
+    .w{ width: 16%; }
+    .p{ width: 16%; }
+    .s{ width: 16%; }
+    .grams{
+      width:100%;
+      padding:8px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      text-align:right;
+      background:#fff;
+      color:var(--text);
+    }
+    .price, .subtotal{
+      display:inline-block;
+      width:100%;
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+    }
+    .row-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:6px;
+    }
+    .icon-btn{
+      border:2px solid var(--border);
+      background:#fff;
+      color:#000;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor:pointer;
+      line-height:1;
+    }
+    tfoot td{
+      background: var(--header);
+      font-weight: 900;
+      border-top:2px solid var(--border);
+      padding: 10px 10px;
+    }
+    .total-label{ text-align:right; }
+    .total-val{ text-align:right; font-variant-numeric: tabular-nums; }
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    button{
+      border:2px solid var(--border);
+      background:#fff;
+      color:#000;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor:pointer;
+    }
+    button:active{ transform: translateY(1px); }
+    button[disabled]{ opacity: .45; cursor: not-allowed; }
+    .hint{
+      margin-top:10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .confirm{
+      margin-top: 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      background: #fff;
+    }
+    .confirm label{
+      margin: 0;
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.35;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .confirm input[type="checkbox"]{
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      accent-color: #000;
+      flex: 0 0 auto;
+    }
+    .confirm .req{ font-weight: 900; margin-left: 4px; }
+    /* Dialog */
+    dialog{
+      width: min(720px, calc(100% - 24px));
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0;
+    }
+    dialog::backdrop{ background: rgba(0,0,0,.25); }
+    .dlg-head{
+      padding: 12px 12px 10px;
+      border-bottom: 2px solid var(--border);
+      background: var(--header);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .dlg-head strong{ font-size: 14px; }
+    .dlg-body{ padding: 12px; }
+    .list{
+      margin-top: 10px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      overflow:hidden;
+      max-height: min(55vh, 460px);
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .list .grp{
+      padding: 8px 10px;
+      background: var(--group);
+      font-weight: 900;
+      font-size: 12px;
+      border-bottom:2px solid var(--border);
+    }
+    .list button.item{
+      width:100%;
+      text-align:left;
+      border:0;
+      border-bottom:1px solid #ddd;
+      border-radius:0;
+      padding: 10px 10px;
+      background:#fff;
+      font-weight: 800;
+      font-size: 13px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      cursor:pointer;
+    }
+    .list button.item:hover{ background: var(--shade2); }
+    .pill{
+      border:2px solid var(--border);
+      border-radius:999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      white-space:nowrap;
+    }
+    .empty{
+      padding: 14px 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 540px){
+      .meta{ grid-template-columns: 1fr; }
+      .meta2{ grid-template-columns: 1fr; }
+      .meta3{ justify-content:flex-start; }
+      .totalbox{ width: 100%; }
+      h1{ font-size: 18px; }
+      thead th{ font-size: 12px; padding: 8px; }
+      tbody td{ padding: 8px; font-size: 12px; }
+      .grams{ font-size: 13px; padding: 8px; }
+    }
+    @media print {
+      dialog { display:none !important; }
+      .actions, .hint { display:none; }
+      body{ background:#fff; }
+      .page{ max-width:none; padding:0; }
+      .table-wrap{ border-radius:0; }
+      input, select{ border: 1.5px solid #000 !important; }
+    }
+  .th-flex{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .add-in-table{
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      background:#fff;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 0;
+      cursor:pointer;
+      flex: 0 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Glaze Kitchen Materials Log</h1>
+      <div class="meta">
+        <div>
+          <label for="author">Author's Name</label>
+          <input id="author" type="text" placeholder="Your name"/>
+        </div>
+        <div>
+          <label for="date">Date</label>
+          <input id="date" type="date"/>
+        </div>
+      </div>
+      <div class="meta2">
+        <div>
+          <label for="glaze">Glaze</label>
+          <input id="glaze" type="text" placeholder="Glaze name"/>
+        </div>
+        <div>
+          <label for="firing">Firing temperature / type</label>
+          <select id="firing">
+            <option value="earthenware">earthenware</option>
+            <option value="midfire" selected>midfire</option>
+            <option value="stoneware">stoneware</option>
+          </select>
+        </div>
+      </div>
+      <div class="meta3">
+        <div class="totalbox">
+          <label for="totalTop">Total ($)</label>
+          <input id="totalTop" type="text" value="$0.00" readonly/>
+        </div>
+      </div>
+    </header>
+
+    <div class="table-wrap">
+      <table aria-label="Materials cost log">
+        <thead>
+          <tr>
+            <th class="mat"><div class="th-flex"><span>Material</span><button type="button" id="addBtn" class="add-in-table" aria-label="Add material">+</button></div></th>
+            <th class="w">Weight (g)</th>
+            <th class="p">Price/g ($)</th>
+            <th class="s">Subtotal ($)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr id="emptyRow">
+            <td colspan="4" class="empty">
+              No materials added yet. Tap the <strong>+</strong> button to add one.
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="total-label">TOTAL ($)</td>
+            <td class="total-val" id="totalBottom">$0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="confirm">
+      <label>
+        <input id="safetyConfirm" type="checkbox" />
+        <span>
+          <strong>Confirmation</strong><span class="req"> (required to print/save)</span><br/>
+          I have been inducted into the safety procedures of the space and fully understand the risks are my responsibility to manage. I am aware a Dust Safety Mask and Gloves must be worn when mixing with dangerous powdered or easily contaminating materials; i.e Barium, Oxides, etc.
+        </span>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="clear">Clear all materials</button>
+      <button type="button" id="print" disabled>Print / Save as PDF</button>
+    </div>
+
+    <div class="hint">
+      Workflow: Tap <strong>+</strong> to add a material, enter grams, and totals update instantly. Prices are fixed.
+    </div>
+  </div>
+<dialog id="picker">
+    <div class="dlg-head">
+      <strong>Add a material</strong>
+      <button class="icon-btn" id="closePicker" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="dlg-body">
+      <label for="search">Search materials</label>
+      <input id="search" type="search" placeholder="Type to search (e.g., silica, frit, iron)"/>
+      <div class="list" id="list"></div>
+    </div>
+  </dialog>
+
+  <script>
+    const MATERIALS = [{"name": "Alumina (calcined 100#)", "price": 0.02, "group": "Raw Materials"}, {"name": "Alumina (calcined 300#)", "price": 0.02, "group": "Raw Materials"}, {"name": "Alumina Hydrate", "price": 0.02, "group": "Raw Materials"}, {"name": "Ball Clay / FX", "price": 0.02, "group": "Raw Materials"}, {"name": "Bentonite", "price": 0.02, "group": "Raw Materials"}, {"name": "Bone Ash (synthetic)", "price": 0.05, "group": "Raw Materials"}, {"name": "Borax", "price": 0.05, "group": "Raw Materials"}, {"name": "Burnt umber", "price": 0.05, "group": "Raw Materials"}, {"name": "Calcite / Whiting", "price": 0.02, "group": "Raw Materials"}, {"name": "China Clay", "price": 0.02, "group": "Raw Materials"}, {"name": "Colememanite", "price": 0.02, "group": "Raw Materials"}, {"name": "Cornish Stone", "price": 0.02, "group": "Raw Materials"}, {"name": "Cryolite", "price": 0.05, "group": "Raw Materials"}, {"name": "Dolomite", "price": 0.02, "group": "Raw Materials"}, {"name": "Feldspar, Soda", "price": 0.02, "group": "Raw Materials"}, {"name": "Feldspar; Potash", "price": 0.02, "group": "Raw Materials"}, {"name": "Fireclay", "price": 0.02, "group": "Raw Materials"}, {"name": "Gerstley Borate", "price": 0.05, "group": "Raw Materials"}, {"name": "illmanite sand", "price": 0.02, "group": "Raw Materials"}, {"name": "Kaolin (China Clay / Clay Ceram)", "price": 0.02, "group": "Raw Materials"}, {"name": "Lithium Carbonate", "price": 0.15, "group": "Raw Materials"}, {"name": "Magnesium Carbonate (heavy)", "price": 0.02, "group": "Raw Materials"}, {"name": "Magnesium Carbonate (light)", "price": 0.05, "group": "Raw Materials"}, {"name": "Molochite 200", "price": 0.02, "group": "Raw Materials"}, {"name": "Nepheline Syeneite", "price": 0.02, "group": "Raw Materials"}, {"name": "Rhyolite", "price": 0.02, "group": "Raw Materials"}, {"name": "Rutile flour", "price": 0.05, "group": "Raw Materials"}, {"name": "Silica 200", "price": 0.02, "group": "Raw Materials"}, {"name": "Silicon Carbide", "price": 0.1, "group": "Raw Materials"}, {"name": "Soda Ash", "price": 0.02, "group": "Raw Materials"}, {"name": "Spodumene", "price": 0.05, "group": "Raw Materials"}, {"name": "Strontium Carbonate", "price": 0.1, "group": "Raw Materials"}, {"name": "Talc", "price": 0.02, "group": "Raw Materials"}, {"name": "Wollastonite", "price": 0.02, "group": "Raw Materials"}, {"name": "Zircon Flour", "price": 0.02, "group": "Raw Materials"}, {"name": "Zirconium Silicate", "price": 0.05, "group": "Raw Materials"}, {"name": "Frit 3134 leadless calcium boron", "price": 0.05, "group": "Frits"}, {"name": "Frit 3531 lead bi sil – replace 4064", "price": 0.05, "group": "Frits"}, {"name": "Frit 4108 leadless low alumina", "price": 0.05, "group": "Frits"}, {"name": "Frit 4110 high alkaline/lead", "price": 0.02, "group": "Frits"}, {"name": "Frit 4124 leadless calcium borosilicate", "price": 0.05, "group": "Frits"}, {"name": "Frit 4131 hard boron leadless", "price": 0.05, "group": "Frits"}, {"name": "Frit 4193 lead free barium borosilicate", "price": 0.05, "group": "Frits"}, {"name": "Frit 4194 lead free sodium borosilicate", "price": 0.05, "group": "Frits"}, {"name": "Black Iron Oxide", "price": 0.02, "group": "Oxides"}, {"name": "Chrome Oxide", "price": 0.05, "group": "Oxides"}, {"name": "Cobalt carbonate (Black)", "price": 0.15, "group": "Oxides"}, {"name": "Cobalt Oxide", "price": 0.15, "group": "Oxides"}, {"name": "Copper Carbonate", "price": 0.1, "group": "Oxides"}, {"name": "Copper Oxide (Black)", "price": 0.1, "group": "Oxides"}, {"name": "Manganese Dioxide", "price": 0.02, "group": "Oxides"}, {"name": "Nickel oxide", "price": 0.15, "group": "Oxides"}, {"name": "Red Iron Oxide", "price": 0.02, "group": "Oxides"}, {"name": "Tin Oxide", "price": 0.1, "group": "Oxides"}, {"name": "Titanium dioxide", "price": 0.05, "group": "Oxides"}, {"name": "Yellow Ochre Iron Oxide", "price": 0.02, "group": "Oxides"}, {"name": "Zinc Oxide", "price": 0.05, "group": "Oxides"}];
+
+    const tbody = document.getElementById('tbody');
+    const totalBottom = document.getElementById('totalBottom');
+    const totalTop = document.getElementById('totalTop');
+    const dlg = document.getElementById('picker');
+    const list = document.getElementById('list');
+    const search = document.getElementById('search');
+
+    const confirmBox = document.getElementById('safetyConfirm');
+    const printBtn = document.getElementById('print');
+
+    const used = new Map(); // name -> row element
+
+    function num(v) {
+      if (!v) return 0;
+      v = (''+v).trim().replace(',', '.');
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function money(n) {
+      return '$' + n.toFixed(2);
+    }
+    function escapeHtml(s) {
+      return (''+s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function recalc() {
+      let total = 0;
+      used.forEach((row) => {
+        const gramsInput = row.querySelector('input.grams');
+        const grams = num(gramsInput.value);
+        const price = num(row.dataset.price);
+        const sub = grams * price;
+        row.querySelector('.subtotal').textContent = money(sub);
+        total += sub;
+      });
+      totalBottom.textContent = money(total);
+      totalTop.value = money(total);
+      updatePrintState();
+    }
+
+    function updatePrintState() {
+      const ok = confirmBox.checked && used.size > 0;
+      printBtn.disabled = !ok;
+    }
+    confirmBox.addEventListener('change', updatePrintState);
+
+    const groupsOrder = ['Raw Materials','Frits','Oxides'];
+
+    function buildList(filterText='') {
+      const q = (filterText || '').trim().toLowerCase();
+      list.innerHTML = '';
+
+      const byGroup = new Map();
+      MATERIALS.forEach(m => {
+        const g = m.group || 'Materials';
+        if (!byGroup.has(g)) byGroup.set(g, []);
+        byGroup.get(g).push(m);
+      });
+
+      const groups = Array.from(byGroup.keys()).sort((a,b)=> {
+        const ia = groupsOrder.indexOf(a);
+        const ib = groupsOrder.indexOf(b);
+        if (ia === -1 && ib === -1) return a.localeCompare(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+      let any = false;
+      groups.forEach(g => {
+        const items = byGroup.get(g).filter(m => {
+          if (!q) return true;
+          return m.name.toLowerCase().includes(q);
+        });
+        if (items.length === 0) return;
+
+        any = true;
+        const grp = document.createElement('div');
+        grp.className = 'grp';
+        grp.textContent = g.toUpperCase();
+        list.appendChild(grp);
+
+        items.forEach(m => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'item';
+          btn.innerHTML = `<span>${escapeHtml(m.name)}</span><span class="pill">$${m.price.toFixed(2)}/g</span>`;
+          btn.addEventListener('click', () => addMaterial(m));
+          list.appendChild(btn);
+        });
+      });
+
+      if (!any) {
+        const div = document.createElement('div');
+        div.className = 'empty';
+        div.textContent = 'No matches. Try another search term.';
+        list.appendChild(div);
+      }
+    }
+
+    function addMaterial(m) {
+      if (used.has(m.name)) {
+        const row = used.get(m.name);
+        row.scrollIntoView({behavior:'smooth', block:'center'});
+        row.querySelector('input.grams').focus();
+        dlg.close();
+        return;
+      }
+
+      const empty = document.getElementById('emptyRow');
+      if (empty) empty.remove();
+
+      const tr = document.createElement('tr');
+      tr.className = 'item-row';
+      tr.dataset.price = m.price.toFixed(2);
+      tr.innerHTML = `
+        <td class="mat">
+          <div style="font-weight:900">${escapeHtml(m.name)}</div>
+          <div class="row-actions">
+            <button class="icon-btn del" type="button" aria-label="Delete ${escapeHtml(m.name)}">Delete</button>
+          </div>
+        </td>
+        <td class="w">
+          <input inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" class="grams" placeholder="0" />
+        </td>
+        <td class="p"><span class="price">$${m.price.toFixed(2)}</span></td>
+        <td class="s"><span class="subtotal">$0.00</span></td>
+      `;
+
+      tbody.appendChild(tr);
+      used.set(m.name, tr);
+
+      const gramsInput = tr.querySelector('input.grams');
+      gramsInput.addEventListener('input', recalc);
+      gramsInput.addEventListener('change', recalc);
+
+      tr.querySelector('button.del').addEventListener('click', () => {
+        used.delete(m.name);
+        tr.remove();
+        if (used.size === 0) {
+          const emptyRow = document.createElement('tr');
+          emptyRow.id = 'emptyRow';
+          emptyRow.innerHTML = `<td colspan="4" class="empty">No materials added yet. Tap the <strong>+</strong> button to add one.</td>`;
+          tbody.appendChild(emptyRow);
+        }
+        recalc();
+      });
+
+      dlg.close();
+      setTimeout(() => {
+        tr.scrollIntoView({behavior:'smooth', block:'center'});
+        gramsInput.focus();
+      }, 60);
+
+      recalc();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', () => {
+      if (typeof dlg.showModal === 'function') dlg.showModal();
+      else dlg.setAttribute('open','open');
+      search.value = '';
+      buildList('');
+      setTimeout(() => search.focus(), 30);
+    });
+    document.getElementById('closePicker').addEventListener('click', () => dlg.close());
+    search.addEventListener('input', (e) => buildList(e.target.value));
+
+    document.getElementById('clear').addEventListener('click', () => {
+      Array.from(tbody.querySelectorAll('tr.item-row')).forEach(r => r.remove());
+      used.clear();
+      if (!document.getElementById('emptyRow')) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.id = 'emptyRow';
+        emptyRow.innerHTML = `<td colspan="4" class="empty">No materials added yet. Tap the <strong>+</strong> button to add one.</td>`;
+        tbody.appendChild(emptyRow);
+      }
+      recalc();
+    });
+
+    document.getElementById('print').addEventListener('click', () => {
+      if (printBtn.disabled) return;
+      window.print();
+    });
+
+    // Init
+    buildList('');
+    recalc();
+  </script>
+</body>
+</html>
